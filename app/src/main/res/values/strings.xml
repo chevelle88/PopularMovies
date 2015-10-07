@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Popular Movies</string>
+
+    <!-- Menu Actions -->
+    <string name="action_sort_popular">Sort Most Popular</string>
+    <string name="action_sort_rate">Sort Highest Rated</string>
+
+    <!-- Sort Options -->
+    <string name="sort_popular">popularity.desc</string>
+    <string name="sort_rate">vote_count.desc</string>
+
+    <!-- Strings for themoviedb.org-->
+    <string name="movieDbUrl">http://api.themoviedb.org/3/discover/movie</string>
+    <string name="baseImageUrl">http://image.tmdb.org/t/p/</string>
+    <string name="apiKey">ADD API KEY HERE</string>
+
+    <!-- Movie Details -->
+    <string name="movieDetailKey">com.chevelle.poplularmovies.Detail</string>
+    <string name="title_activity_movie_detail">MovieDetail</string>
+</resources>
