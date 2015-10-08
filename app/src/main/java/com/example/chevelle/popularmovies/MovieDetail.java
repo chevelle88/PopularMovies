@@ -30,6 +30,7 @@ public class MovieDetail extends ActionBarActivity {
         ImageView movieView = null;
 
         try {
+            String content = null;
             JSONObject info = new JSONObject(new JSONTokener(detail));
             String imageUrl = getImageUrl(info);
 
@@ -37,13 +38,16 @@ public class MovieDetail extends ActionBarActivity {
             movieText.setText(info.getString("original_title"));
 
             movieText = (TextView)findViewById(R.id.rating);
-            movieText.setText(info.getString("vote_average"));
+            content = "Rating: " + info.getString("vote_average");
+            movieText.setText(content);
 
             movieText = (TextView)findViewById(R.id.releaseDate);
-            movieText.setText(info.getString("release_date"));
+            content = "Release Date: " + info.getString("release_date");
+            movieText.setText(content);
 
             movieText = (TextView)findViewById(R.id.overview);
-            movieText.setText(info.getString("overview"));
+            content = "Overview: \n\n" + info.getString("overview");
+            movieText.setText(content);
 
             movieView = (ImageView)findViewById(R.id.movieImg);
             Picasso.with(this).load(imageUrl).into(movieView);
