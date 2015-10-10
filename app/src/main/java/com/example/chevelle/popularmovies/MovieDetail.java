@@ -70,20 +70,4 @@ public class MovieDetail extends ActionBarActivity {
 
         return imageUrl.toString();
     }
-
-    /* SAMPLE DATA
-    {"adult":false,"backdrop_path":"/t5KONotASgVKq4N19RyhIthWOPG.jpg",
-    "genre_ids":[28,12,878,53],"id":135397,
-    "original_language":"en",
-    "original_title":"Jurassic World",
-    "overview":"Twenty-two years after the events of Jurassic Park, Isla Nublar now features a fully functioning dinosaur theme park, Jurassic World, as originally envisioned by John Hammond.",
-    "release_date":"2015-06-12",
-    "poster_path":"/hTKME3PUzdS3ezqK5BZcytXLCUl.jpg",
-    "popularity":66.494225,
-    "title":"Jurassic World",
-    "video":false,
-    "vote_average":7.0,
-    "vote_count":2464}
-     */
-
 }
