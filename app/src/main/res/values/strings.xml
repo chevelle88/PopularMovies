@@ -4,17 +4,28 @@
     <!-- Menu Actions -->
     <string name="action_sort_popular">Sort Most Popular</string>
     <string name="action_sort_rate">Sort Highest Rated</string>
+    <string name="action_list_favorites">Favorites</string>
 
     <!-- Sort Options -->
     <string name="sort_popular">popularity.desc</string>
     <string name="sort_rate">vote_count.desc</string>
+    <string name="sort_favs">favs_unorder</string>
 
     <!-- Strings for themoviedb.org-->
     <string name="movieDbUrl">http://api.themoviedb.org/3/discover/movie</string>
     <string name="baseImageUrl">http://image.tmdb.org/t/p/</string>
-    <string name="apiKey">ADD API KEY HERE</string>
+    <string name="movieUrl">http://api.themoviedb.org/3/movie</string>
+    <string name="apiKey"></string>
 
     <!-- Movie Details -->
     <string name="movieDetailKey">com.chevelle.poplularmovies.Detail</string>
     <string name="title_activity_movie_detail">MovieDetail</string>
+    <string name="trailerTitle">Trailers</string>
+    <string name="reviewTitle">Reviews</string>
+
+    <!-- Shared Preferences -->
+    <string name="preferencesName">com.chevelle.popularmovies.MOVIE_FAVS</string>
+
+    <!-- YouTube Url -->
+    <string name="videoUrl">https://www.youtube.com/embed/</string>
 </resources>

@@ -10,19 +10,24 @@ import android.view.ViewGroup;
 import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.content.SharedPreferences;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.io.BufferedReader;
-import java.io.Closeable;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Map;
+import java.util.Collection;
 
 
 public class MoviesFragment extends Fragment {
+
+    private String prefName;
+    private String favOption;
 
     public MoviesFragment() {
         // Required empty public constructor
@@ -40,6 +45,10 @@ public class MoviesFragment extends Fragment {
         View fragmentView = inflater.inflate(R.layout.fragment_movies, container, false);
         String initialSort = getString(R.string.sort_popular);
 
+        // Get favorites strings.
+        prefName = getString(R.string.preferencesName);
+        favOption =  getString(R.string.sort_favs);
+
         // Get popular movies.
         loadMovieListing(initialSort);
 
@@ -47,11 +56,14 @@ public class MoviesFragment extends Fragment {
         return fragmentView;
     }
 
-    public void loadMovieListing(String sortBy) {
-        String movieUrl = getString(R.string.movieDbUrl);
-        String apiKey = getString(R.string.apiKey);
+    public void loadMovieListing(String selectedOption) {
 
-        new MoviesAsyncTask().execute(movieUrl, sortBy, apiKey);
+        if (selectedOption.equalsIgnoreCase(favOption)) {
+            loadFromSharedPreferences();
+        }
+        else {
+            loadFromMovieDb(selectedOption);
+        }
     }
 
     public void setMovieResults(JSONArray results) {
@@ -66,18 +78,57 @@ public class MoviesFragment extends Fragment {
 
         // Set a onItemClickListener on the grid.
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-          @Override
-          public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-              Adapter movieAdapter = parent.getAdapter();
-              String key = getString(R.string.movieDetailKey);
-              Intent movieIntent = new Intent(getActivity(), MovieDetail.class);
-              JSONObject info = ((MoviesAdapter)movieAdapter).getItem(position);
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Adapter movieAdapter = parent.getAdapter();
+                String key = getString(R.string.movieDetailKey);
+                Intent movieIntent = new Intent(getActivity(), MovieDetail.class);
+                JSONObject info = ((MoviesAdapter) movieAdapter).getItem(position);
 
-              movieIntent.putExtra(key, info.toString());
-              getActivity().startActivity(movieIntent);
-          }
+                movieIntent.putExtra(key, info.toString());
+                getActivity().startActivity(movieIntent);
+            }
 
         });
+    }
+
+    private void loadFromSharedPreferences() {
+
+        try {
+            String favs = prefsToJson();
+            setMovieResults(new JSONArray(favs));
+        }
+        catch (Exception err) { }
+
+    }
+
+    private void loadFromMovieDb(String sortBy) {
+        String movieUrl = getString(R.string.movieDbUrl);
+        String apiKey = getString(R.string.apiKey);
+
+        new MoviesAsyncTask().execute(movieUrl, sortBy, apiKey);
+    }
+
+    private String prefsToJson() {
+        int count = 0;
+        SharedPreferences favsDb =
+                getActivity().getSharedPreferences(prefName, getActivity().MODE_PRIVATE);
+        Collection<String> favValues = (Collection<String>)favsDb.getAll().values();
+        StringBuilder favs = new StringBuilder("[");
+
+        for (String value : favValues) {
+
+            if (count > 0) {
+                favs.append(",");
+            }
+
+            favs.append(value);
+            ++count;
+        }
+
+        favs.append("]");
+
+        return favs.toString();
     }
 
     class MoviesAsyncTask extends AsyncTask<String, Void, JSONArray> {
@@ -89,7 +140,8 @@ public class MoviesFragment extends Fragment {
             StringBuilder data = new StringBuilder();
 
             try {
-                URL movieUrl = new URL(buildMovieURL(urlParts));
+
+                URL movieUrl = new URL(buildMovieUrl(urlParts));
                 site = (HttpURLConnection)movieUrl.openConnection();
 
                 reader = new BufferedReader(new InputStreamReader(site.getInputStream()));
@@ -106,7 +158,7 @@ public class MoviesFragment extends Fragment {
                 System.out.println("Exception: " + anyError.getMessage());
             }
             finally {
-                closeIO(reader);
+                MovieIOUtil.closeIO(reader);
                 site.disconnect();
             }
 
@@ -117,24 +169,17 @@ public class MoviesFragment extends Fragment {
             setMovieResults(results);
         }
 
-        private String buildMovieURL(String [] urlParts) {
-            StringBuilder movieUrl = new StringBuilder();
+        private String buildMovieUrl(String [] urlParts) {
+            StringBuilder movieUrl = new StringBuilder(urlParts[0] + "?");
 
-            movieUrl.append(urlParts[0] + "?");
-            movieUrl.append("sort_by=" + urlParts[1] + "&");
+            // Append the url parameters
+            movieUrl.append("sort_by=" + urlParts[1]);
+            movieUrl.append("&");
             movieUrl.append("api_key=" + urlParts[2]);
 
             return movieUrl.toString();
         }
 
-        private void closeIO(Closeable resource) {
-            try {
-                if (resource != null) {
-                    resource.close();
-                }
-            }
-            catch (Exception anyError) { }
-        }
     }
 
 }

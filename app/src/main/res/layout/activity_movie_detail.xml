@@ -9,6 +9,7 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context="com.example.chevelle.popularmovies.MovieDetail">
 
+    <!-- Add widgets for favorite button, reviews and trailers -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -54,14 +55,62 @@
             android:textSize="@dimen/movie_text_size"
             android:paddingLeft="@dimen/movie_text_padding" />
 
+        <ToggleButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/favState"
+            android:layout_below="@+id/releaseDate"
+            android:layout_toRightOf="@+id/movieImg"
+            android:gravity="center_horizontal"
+            android:textSize="14dp"
+            android:textOff="Add Fav"
+            android:textOn="Fav" />
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/overview"
-            android:layout_alignParentBottom="true"
             android:layout_below="@+id/movieImg"
             android:paddingTop="@dimen/movie_text_padding"
             android:textSize="@dimen/movie_text_size" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/trailerLbl"
+            android:layout_below="@+id/overview"
+            android:paddingTop="@dimen/movie_text_padding"
+            android:paddingBottom="@dimen/movie_text_padding"
+            android:text="@string/trailerTitle"
+            android:textSize="@dimen/movie_text_size"
+            android:textStyle="bold"
+            android:textColor="#950100" />
+
+        <ListView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/trailerList"
+            android:layout_below="@+id/trailerLbl"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/reviewLbl"
+            android:layout_below="@+id/trailerList"
+            android:paddingTop="@dimen/movie_text_padding"
+            android:paddingBottom="@dimen/movie_text_padding"
+            android:text="@string/reviewTitle"
+            android:textSize="@dimen/movie_text_size"
+            android:textStyle="bold"
+            android:textColor="#950100" />
+
+        <ListView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/reviewList"
+            android:layout_below="@+id/reviewLbl"
+            android:layout_alignParentBottom="true"/>
+
     </RelativeLayout>
 
 </ScrollView>

@@ -24,7 +24,13 @@ public class MoviesAdapter extends BaseAdapter {
     }
 
     public int getCount() {
-        return items.length();
+        int count = 0;
+
+        if (items != null) {
+            count = items.length();
+        }
+
+        return count;
     }
 
     public JSONObject getItem(int position) {
@@ -55,7 +61,9 @@ public class MoviesAdapter extends BaseAdapter {
 
             Picasso.with(context).load(posterUrl).into(poster);
         }
-        catch (Exception anyError) { }
+        catch (Exception anyError) {
+            anyError.printStackTrace();
+        }
 
         return poster;
     }
