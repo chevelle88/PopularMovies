@@ -1,5 +1,6 @@
 package com.example.chevelle.popularmovies;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -26,16 +27,50 @@ import java.util.Collection;
 
 public class MoviesFragment extends Fragment {
 
+    private static String SAVE_SORT_OPTION;
+
     private String prefName;
     private String favOption;
+    private String sortOption;
+    private boolean multiPanedActivity = false;
+    private OnMovieSelectedListener movieListener;
+
+    public interface OnMovieSelectedListener {
+        public void onMovieSelected(String movieDetail);
+    }
 
     public MoviesFragment() {
         // Required empty public constructor
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putString(SAVE_SORT_OPTION, sortOption);
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+
+        try {
+            multiPanedActivity = ((MainActivity)activity).isMultiPaned();
+            movieListener = (OnMovieSelectedListener)activity;
+        }
+        catch (ClassCastException castErr) {
+            throw new ClassCastException(activity.toString() +
+                    " must implement OnMovieSelectedListener");
+        }
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Initialize.
+        prefName = getString(R.string.preferencesName);
+        favOption =  getString(R.string.sort_favs);
     }
 
     @Override
@@ -43,21 +78,34 @@ public class MoviesFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         View fragmentView = inflater.inflate(R.layout.fragment_movies, container, false);
-        String initialSort = getString(R.string.sort_popular);
-
-        // Get favorites strings.
-        prefName = getString(R.string.preferencesName);
-        favOption =  getString(R.string.sort_favs);
-
-        // Get popular movies.
-        loadMovieListing(initialSort);
 
         // Inflate the layout for this fragment
         return fragmentView;
     }
 
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        String initialSort = null;
+
+        if (savedInstanceState == null) {
+            initialSort = getString(R.string.sort_popular);
+        }
+        else {
+            initialSort = savedInstanceState.getString(SAVE_SORT_OPTION);
+        }
+
+        // Get popular movies.
+        loadMovieListing(initialSort);
+    }
+
     public void loadMovieListing(String selectedOption) {
 
+        // Set the current sort selection.
+        sortOption = selectedOption;
+
+        // Load movie collection based upon selected menu option.
         if (selectedOption.equalsIgnoreCase(favOption)) {
             loadFromSharedPreferences();
         }
@@ -81,15 +129,26 @@ public class MoviesFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Adapter movieAdapter = parent.getAdapter();
-                String key = getString(R.string.movieDetailKey);
-                Intent movieIntent = new Intent(getActivity(), MovieDetail.class);
-                JSONObject info = ((MoviesAdapter) movieAdapter).getItem(position);
+                JSONObject info = ((MoviesAdapter)movieAdapter).getItem(position);
+                String movieInfo = info.toString();
 
-                movieIntent.putExtra(key, info.toString());
-                getActivity().startActivity(movieIntent);
+                if (multiPanedActivity) {
+                    movieListener.onMovieSelected(movieInfo);
+                }
+                else {
+                    showMovieDetail(movieInfo);
+                }
             }
 
         });
+    }
+
+    private void showMovieDetail(String movieInfo) {
+        String key = getString(R.string.movieDetailKey);
+        Intent movieIntent = new Intent(getActivity(), MovieDetail.class);
+
+        movieIntent.putExtra(key, movieInfo);
+        getActivity().startActivity(movieIntent);
     }
 
     private void loadFromSharedPreferences() {
@@ -98,7 +157,9 @@ public class MoviesFragment extends Fragment {
             String favs = prefsToJson();
             setMovieResults(new JSONArray(favs));
         }
-        catch (Exception err) { }
+        catch (Exception err) {
+            System.out.println("loadFromSharedPreferences (Error): " + err.getMessage());
+        }
 
     }
 
@@ -182,4 +243,5 @@ public class MoviesFragment extends Fragment {
 
     }
 
+    // Create a public interface to communicate with the activity to send a message to the other fragment
 }

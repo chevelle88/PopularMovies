@@ -10,9 +10,11 @@ import android.content.SharedPreferences;
 import java.util.Map;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity
+        implements MoviesFragment.OnMovieSelectedListener {
 
     private String sharedPrefName;
+    private boolean multiPaned;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,10 +23,15 @@ public class MainActivity extends ActionBarActivity {
 
         sharedPrefName = getString(R.string.preferencesName);
 
+        setMultiPanedState();
+
         if (savedInstanceState == null) {
-            getFragmentManager().beginTransaction()
+
+            if (!isMultiPaned()) {
+                getFragmentManager().beginTransaction()
                     .add(R.id.container, new MoviesFragment())
                     .commit();
+            }
         }
 
     }
@@ -33,6 +40,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onResume() {
         super.onResume();
 
+        // Update menu.
         invalidateOptionsMenu();
     }
 
@@ -46,16 +54,10 @@ public class MainActivity extends ActionBarActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml
-        int id = item.getItemId();
         String selectedOption = null;
+        int selectedOptionId = item.getItemId();
 
-        switch(id) {
-            case R.id.action_sort_popular:
-                selectedOption = getString(R.string.sort_popular);
-                break;
+        switch(selectedOptionId) {
 
             case R.id.action_sort_rate:
                 selectedOption = getString(R.string.sort_rate);
@@ -64,6 +66,11 @@ public class MainActivity extends ActionBarActivity {
             case R.id.action_list_favs:
                 selectedOption = getString(R.string.sort_favs);
                 break;
+
+            default:
+                selectedOption = getString(R.string.sort_popular);
+                break;
+
         }
 
         // Update the movie listing with a new sort order.
@@ -77,19 +84,38 @@ public class MainActivity extends ActionBarActivity {
         MenuItem favItem = menu.findItem(R.id.action_list_favs);
         SharedPreferences favsDb = getSharedPreferences(sharedPrefName, MODE_PRIVATE);
         Map<String, String> favs = (Map<String, String>)favsDb.getAll();
-        String defaultSort = getString(R.string.sort_popular);
 
         if (favItem != null) {
             favItem.setEnabled((favs.size() > 0));
         }
 
-        refreshMovieListing(defaultSort);
-
         return super.onPrepareOptionsMenu(menu);
     }
 
+    @Override
+    public void onMovieSelected(String movieDetail) {
+        Fragment movieInfo = getFragmentManager().findFragmentById(R.id.movieInfo);
+
+        ((MovieDetailFragment)movieInfo).loadMovieInfo(movieDetail);
+    }
+
+    public boolean isMultiPaned() {
+        return multiPaned;
+    }
+
     private void refreshMovieListing(String selectedOption) {
-        Fragment movies = getFragmentManager().findFragmentById(R.id.container);
+        int fragId = (multiPaned) ? R.id.movieLibrary : R.id.container;
+        Fragment movies = getFragmentManager().findFragmentById(fragId);
+
         ((MoviesFragment)movies).loadMovieListing(selectedOption);
     }
+
+    private void setMultiPanedState() {
+        Fragment movieInfo = getFragmentManager().findFragmentById(R.id.movieInfo);
+        Fragment movieList = getFragmentManager().findFragmentById(R.id.movieLibrary);
+
+
+        multiPaned = ((movieList != null) && (movieInfo != null));
+    }
+
 }
