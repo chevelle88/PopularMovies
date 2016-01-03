@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.content.SharedPreferences;
 
 import java.util.Map;
@@ -103,6 +104,15 @@ public class MainActivity extends ActionBarActivity
         return multiPaned;
     }
 
+    public void showTrailer(View view) {
+        MovieDetailFragment detailFrag = detailFrag =
+                (MovieDetailFragment)getFragmentManager().findFragmentById(R.id.movieInfo);
+
+        if (detailFrag != null) {
+            detailFrag.showTrailer(view);
+        }
+    }
+
     private void refreshMovieListing(String selectedOption) {
         int fragId = (multiPaned) ? R.id.movieLibrary : R.id.container;
         Fragment movies = getFragmentManager().findFragmentById(fragId);
@@ -116,6 +126,7 @@ public class MainActivity extends ActionBarActivity
 
 
         multiPaned = ((movieList != null) && (movieInfo != null));
+        System.out.println("multiPaned: " + multiPaned);
     }
 
 }

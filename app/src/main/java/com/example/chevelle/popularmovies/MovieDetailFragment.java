@@ -40,6 +40,7 @@ import java.util.Set;
 public class MovieDetailFragment extends Fragment {
 
     private boolean favMovie;
+    private boolean inMultiPane;
     private String movieId = null;
     private JSONObject info = null;
     private JSONObject infoExtras = null;
@@ -87,6 +88,9 @@ public class MovieDetailFragment extends Fragment {
         else {
             restoreMovieInfo(savedInstanceState);
         }
+
+        // Check if this fragment is in a multi-pane activity.
+        inMultiPane = (getActivity().findViewById(R.id.movieInfo) != null);
     }
 
     @Override
@@ -103,25 +107,17 @@ public class MovieDetailFragment extends Fragment {
     public void onPause() {
         super.onPause();
 
-        SharedPreferences.Editor editor = favsDb.edit();
-
-        if (favMovie) {
-            if (!favsDb.contains(movieId)) {
-                editor.putString(movieId, info.toString());
-                editor.commit();
-            }
-        }
-        else {
-            if (favsDb.contains(movieId)) {
-                editor.remove(movieId);
-                editor.commit();
-            }
-        }
+        updateFavoritesList();
     }
 
     public void loadMovieInfo(String detail) {
 
         try {
+
+            // Update favorites list if view in a multi-pane activity.
+            if (inMultiPane) {
+                updateFavoritesList();
+            }
 
             info = new JSONObject(new JSONTokener(detail));
             movieId = info.getString("id");
@@ -130,9 +126,21 @@ public class MovieDetailFragment extends Fragment {
             String movieUrl = getString(R.string.movieUrl);
             String apiKey = getString(R.string.apiKey);
             new DetailAsyncTask().execute(movieUrl, movieId, apiKey);
-
         }
         catch (Exception err) { }
+    }
+
+
+    public void showTrailer(View view) {
+        String title = (String)((TextView)view).getText();
+        String url = buildTrailerUrl(title);
+        Uri video = Uri.parse(url);
+        Intent intent = new Intent(Intent.ACTION_VIEW, video);
+
+        if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
+            startActivity(intent);
+        }
+
     }
 
     private void populateView() {
@@ -145,18 +153,6 @@ public class MovieDetailFragment extends Fragment {
         }
         catch (Exception anyErr) {
         }
-    }
-
-    public void showTrailer(View view) {
-        String title = (String)((TextView)view).getText();
-        String url = buildTrailerUrl(title);
-        Uri video = Uri.parse(url);
-        Intent intent = new Intent(Intent.ACTION_VIEW, video);
-
-        if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
-            startActivity(intent);
-        }
-
     }
 
     private void restoreMovieInfo(Bundle savedMovieState) {
@@ -273,6 +269,23 @@ public class MovieDetailFragment extends Fragment {
                 favMovie = isChecked;
             }
         });
+    }
+
+    private void updateFavoritesList() {
+        SharedPreferences.Editor editor = favsDb.edit();
+
+        if (favMovie) {
+            if (!favsDb.contains(movieId)) {
+                editor.putString(movieId, info.toString());
+                editor.commit();
+            }
+        }
+        else {
+            if (favsDb.contains(movieId)) {
+                editor.remove(movieId);
+                editor.commit();
+            }
+        }
     }
 
     private String buildTrailerUrl(String title) {

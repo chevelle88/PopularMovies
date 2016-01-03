@@ -72,6 +72,10 @@ public class MoviesAdapter extends BaseAdapter {
         items = results;
     }
 
+    public JSONArray getItems() {
+        return items;
+    }
+
     private String getImageUrl(JSONObject movieInfo) {
         StringBuffer imageUrl = new StringBuffer();
         String baseUrl = context.getString(R.string.baseImageUrl);

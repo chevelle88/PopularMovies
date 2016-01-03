@@ -5,6 +5,7 @@ import android.app.Fragment;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,18 +22,18 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Map;
+import java.util.ArrayList;
 import java.util.Collection;
 
 
 public class MoviesFragment extends Fragment {
 
     private static String SAVE_SORT_OPTION;
+    private static String SAVE_MOVIES_LIST;
 
     private String prefName;
     private String favOption;
     private String sortOption;
-    private boolean multiPanedActivity = false;
     private OnMovieSelectedListener movieListener;
 
     public interface OnMovieSelectedListener {
@@ -48,6 +49,10 @@ public class MoviesFragment extends Fragment {
         super.onSaveInstanceState(outState);
 
         outState.putString(SAVE_SORT_OPTION, sortOption);
+
+        if (!sortOption.equals(favOption)) {
+            saveMoviesList(outState);
+        }
     }
 
     @Override
@@ -55,7 +60,6 @@ public class MoviesFragment extends Fragment {
         super.onAttach(activity);
 
         try {
-            multiPanedActivity = ((MainActivity)activity).isMultiPaned();
             movieListener = (OnMovieSelectedListener)activity;
         }
         catch (ClassCastException castErr) {
@@ -90,14 +94,29 @@ public class MoviesFragment extends Fragment {
         String initialSort = null;
 
         if (savedInstanceState == null) {
+
+            // Get popular movies.
             initialSort = getString(R.string.sort_popular);
+            loadMovieListing(initialSort);
         }
         else {
             initialSort = savedInstanceState.getString(SAVE_SORT_OPTION);
+
+            if (initialSort.equals(favOption)) {
+                loadFromSharedPreferences();
+            }
+            else {
+                if (savedInstanceState.containsKey(SAVE_MOVIES_LIST)) {
+                    loadFromParcelables(
+                            savedInstanceState.getParcelableArrayList(SAVE_MOVIES_LIST));
+                }
+                else {
+                    loadMovieListing(initialSort);
+                }
+            }
+
         }
 
-        // Get popular movies.
-        loadMovieListing(initialSort);
     }
 
     public void loadMovieListing(String selectedOption) {
@@ -129,13 +148,13 @@ public class MoviesFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Adapter movieAdapter = parent.getAdapter();
-                JSONObject info = ((MoviesAdapter)movieAdapter).getItem(position);
+                JSONObject info = ((MoviesAdapter) movieAdapter).getItem(position);
                 String movieInfo = info.toString();
+                boolean multiPanedActivity = ((MainActivity) getActivity()).isMultiPaned();
 
                 if (multiPanedActivity) {
                     movieListener.onMovieSelected(movieInfo);
-                }
-                else {
+                } else {
                     showMovieDetail(movieInfo);
                 }
             }
@@ -192,6 +211,41 @@ public class MoviesFragment extends Fragment {
         return favs.toString();
     }
 
+    private void loadFromParcelables(ArrayList<Parcelable> parcelables) {
+        JSONArray items = new JSONArray();
+
+        for (Parcelable parcelable : parcelables) {
+            try {
+                items.put(new JSONObject(((MovieParcelable)parcelable).getMovie()));
+            }
+            catch (Exception err) { }
+        }
+
+        setMovieResults(items);
+    }
+
+    private void saveMoviesList(Bundle outstate) {
+        GridView gridView = (GridView) getActivity().findViewById(R.id.movieList);
+        JSONArray movies = ((MoviesAdapter)gridView.getAdapter()).getItems();
+        ArrayList<MovieParcelable> parcelables = new ArrayList<MovieParcelable>();
+        String movie;
+
+        if (movies == null) {
+            return;
+        }
+
+        for (int idx = 0; idx < movies.length(); idx++) {
+
+            try {
+                movie = movies.getJSONObject(idx).toString();
+                parcelables.add(new MovieParcelable(movie));
+            }
+            catch (Exception err) { }
+        }
+
+        outstate.putParcelableArrayList(SAVE_MOVIES_LIST, parcelables);
+    }
+
     class MoviesAsyncTask extends AsyncTask<String, Void, JSONArray> {
         protected JSONArray doInBackground(String[] urlParts) {
             String line = null;
@@ -243,5 +297,4 @@ public class MoviesFragment extends Fragment {
 
     }
 
-    // Create a public interface to communicate with the activity to send a message to the other fragment
 }
