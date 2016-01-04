@@ -48,11 +48,14 @@ public class MoviesFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        outState.putString(SAVE_SORT_OPTION, sortOption);
+        if (sortOption != null) {
+            outState.putString(SAVE_SORT_OPTION, sortOption);
 
-        if (!sortOption.equals(favOption)) {
-            saveMoviesList(outState);
+            if (!sortOption.equals(favOption)) {
+                saveMoviesList(outState);
+            }
         }
+
     }
 
     @Override
@@ -91,18 +94,16 @@ public class MoviesFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        String initialSort = null;
-
         if (savedInstanceState == null) {
 
             // Get popular movies.
-            initialSort = getString(R.string.sort_popular);
-            loadMovieListing(initialSort);
+            sortOption = getString(R.string.sort_popular);
+            loadMovieListing(sortOption);
         }
         else {
-            initialSort = savedInstanceState.getString(SAVE_SORT_OPTION);
+            sortOption = savedInstanceState.getString(SAVE_SORT_OPTION);
 
-            if (initialSort.equals(favOption)) {
+            if (sortOption.equals(favOption)) {
                 loadFromSharedPreferences();
             }
             else {
@@ -111,7 +112,7 @@ public class MoviesFragment extends Fragment {
                             savedInstanceState.getParcelableArrayList(SAVE_MOVIES_LIST));
                 }
                 else {
-                    loadMovieListing(initialSort);
+                    loadMovieListing(sortOption);
                 }
             }
 
@@ -225,10 +226,9 @@ public class MoviesFragment extends Fragment {
     }
 
     private void saveMoviesList(Bundle outstate) {
-        GridView gridView = (GridView) getActivity().findViewById(R.id.movieList);
-        JSONArray movies = ((MoviesAdapter)gridView.getAdapter()).getItems();
-        ArrayList<MovieParcelable> parcelables = new ArrayList<MovieParcelable>();
         String movie;
+        JSONArray movies = getMovies();
+        ArrayList<MovieParcelable> parcelables = new ArrayList<MovieParcelable>();
 
         if (movies == null) {
             return;
@@ -244,6 +244,17 @@ public class MoviesFragment extends Fragment {
         }
 
         outstate.putParcelableArrayList(SAVE_MOVIES_LIST, parcelables);
+    }
+
+    private JSONArray getMovies() {
+        JSONArray movies = null;
+        GridView gridView = (GridView) getActivity().findViewById(R.id.movieList);
+
+        if (gridView != null) {
+            movies = ((MoviesAdapter)gridView.getAdapter()).getItems();
+        }
+
+        return movies;
     }
 
     class MoviesAsyncTask extends AsyncTask<String, Void, JSONArray> {

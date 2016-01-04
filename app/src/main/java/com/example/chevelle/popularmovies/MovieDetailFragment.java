@@ -168,7 +168,6 @@ public class MovieDetailFragment extends Fragment {
             setMovieInfo();
             populateView();
 
-            System.out.println("restoring movie state");
         }
         catch (Exception err) { }
 
