@@ -126,7 +126,6 @@ public class MainActivity extends ActionBarActivity
 
 
         multiPaned = ((movieList != null) && (movieInfo != null));
-        System.out.println("multiPaned: " + multiPaned);
     }
 
 }

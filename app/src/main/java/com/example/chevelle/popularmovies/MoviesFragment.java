@@ -28,8 +28,8 @@ import java.util.Collection;
 
 public class MoviesFragment extends Fragment {
 
-    private static String SAVE_SORT_OPTION;
-    private static String SAVE_MOVIES_LIST;
+    private static String SAVE_SORT_OPTION = "saveSortOption";
+    private static String SAVE_MOVIES_LIST = "saveMoviesList";
 
     private String prefName;
     private String favOption;
